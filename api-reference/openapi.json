@@ -1,94 +1,53 @@
 {
-  "openapi": "3.0.1",
+  "openapi": "3.0.0",
   "info": {
-    "title": "OpenAPI Plant Store",
-    "description": "A sample API that uses a plant store as an example to demonstrate features in the OpenAPI specification",
-    "license": {
-      "name": "MIT"
-    },
-    "version": "1.0.0"
+    "title": "Create Phone Number API",
+    "version": "1.0.0",
+    "description": "API to buy a new phone number and bind agents to it."
   },
   "servers": [
     {
-      "url": "http://sandbox.mintlify.com"
-    }
-  ],
-  "security": [
-    {
-      "bearerAuth": []
+      "url": "https://api.retellai.com"
     }
   ],
   "paths": {
-    "/plants": {
-      "get": {
-        "description": "Returns all plants from the system that the user has access to",
-        "parameters": [
+    "/create-phone-number": {
+      "post": {
+        "summary": "Create a new phone number",
+        "description": "Buy a new phone number and bind agents to it.",
+        "operationId": "createPhoneNumber",
+        "security": [
           {
-            "name": "limit",
-            "in": "query",
-            "description": "The maximum number of results to return",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
+            "BearerAuth": []
           }
         ],
-        "responses": {
-          "200": {
-            "description": "Plant response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Plant"
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "description": "Creates a new plant in the store",
         "requestBody": {
-          "description": "Plant to add to the store",
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NewPlant"
+                "$ref": "#/components/schemas/CreatePhoneNumberRequest"
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
-          "200": {
-            "description": "plant response",
+          "201": {
+            "description": "Created",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Plant"
+                  "$ref": "#/components/schemas/PhoneNumberResponse"
                 }
               }
             }
           },
-          "400": {
-            "description": "unexpected error",
+          "401": {
+            "description": "Unauthorized",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -96,32 +55,918 @@
         }
       }
     },
-    "/plants/{id}": {
-      "delete": {
-        "description": "Deletes a single plant based on the ID supplied",
+    "/list-phone-numbers": {
+      "get": {
+        "summary": "List Phone Numbers",
+        "description": "Retrieve a list of all phone numbers associated with the account.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PhoneNumber"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/update-retell-llm/{llm_id}": {
+      "patch": {
+        "summary": "Update Retell LLM",
+        "description": "Updates an existing Retell LLM configuration.",
         "parameters": [
           {
-            "name": "id",
             "in": "path",
-            "description": "ID of plant to delete",
+            "name": "llm_id",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int64"
+              "type": "string"
+            },
+            "description": "Unique identifier of the Retell LLM to be updated"
+          }
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateRetellLLMRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RetellLLMResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/delete-phone-number/{phone_number}": {
+      "delete": {
+        "summary": "Delete Phone Number",
+        "description": "Deletes an existing phone number.",
+        "tags": [
+          "Phone Numbers"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "phone_number",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The phone number in E.164 format (+country code, number with no spaces or special characters). This acts as the unique identifier for phone number APIs."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/create-retell-llm": {
+      "post": {
+        "summary": "Create Retell LLM",
+        "description": "Creates a new Retell LLM",
+        "operationId": "createRetellLLM",
+        "tags": [
+          "LLM"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRetellLLMRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RetellLLM"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/update-phone-number/{phone_number}": {
+      "patch": {
+        "summary": "Update Phone Number",
+        "description": "Update the agent associated with a purchased phone number.",
+        "operationId": "updatePhoneNumber",
+        "tags": [
+          "Phone Numbers"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "phone_number",
+            "in": "path",
+            "required": true,
+            "description": "The phone number in E.164 format (+country code, number with no spaces or special characters).",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "inbound_agent_id": {
+                    "type": "string",
+                    "nullable": true,
+                    "description": "Unique identifier of the agent to bind to the number for inbound calls. Set to null to disable inbound calls."
+                  },
+                  "outbound_agent_id": {
+                    "type": "string",
+                    "nullable": true,
+                    "description": "Unique identifier of the agent to bind to the number for outbound calls. Set to null to disable outbound calls."
+                  },
+                  "nickname": {
+                    "type": "string",
+                    "nullable": true,
+                    "description": "Nickname for the phone number, for your reference only."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "phone_number": {
+                      "type": "string",
+                      "description": "The phone number in E.164 format."
+                    },
+                    "phone_number_pretty": {
+                      "type": "string",
+                      "description": "A human-friendly representation of the phone number."
+                    },
+                    "inbound_agent_id": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "The unique identifier of the agent for inbound calls."
+                    },
+                    "outbound_agent_id": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "The unique identifier of the agent for outbound calls."
+                    },
+                    "area_code": {
+                      "type": "integer",
+                      "description": "The area code of the phone number."
+                    },
+                    "nickname": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "The nickname assigned to the phone number."
+                    },
+                    "last_modification_timestamp": {
+                      "type": "integer",
+                      "description": "The last modification timestamp (milliseconds since epoch)."
+                    }
+                  },
+                  "required": [
+                    "phone_number",
+                    "phone_number_pretty",
+                    "area_code",
+                    "last_modification_timestamp"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/get-voice/{voice_id}": {
+      "get": {
+        "summary": "Get Voice",
+        "description": "Retrieve details of a specific voice",
+        "operationId": "getVoice",
+        "tags": [
+          "Voice"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "voice_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The unique identifier for the voice"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "voice_id": {
+                      "type": "string",
+                      "description": "The unique identifier for the voice"
+                    },
+                    "voice_name": {
+                      "type": "string",
+                      "description": "The name of the voice"
+                    },
+                    "provider": {
+                      "type": "string",
+                      "enum": [
+                        "elevenlabs",
+                        "openai",
+                        "deepgram"
+                      ],
+                      "description": "Indicates the provider of the voice"
+                    },
+                    "accent": {
+                      "type": "string",
+                      "description": "Accent annotation of the voice"
+                    },
+                    "gender": {
+                      "type": "string",
+                      "enum": [
+                        "male",
+                        "female"
+                      ],
+                      "description": "Gender of the voice"
+                    },
+                    "age": {
+                      "type": "string",
+                      "description": "Age annotation of the voice"
+                    },
+                    "preview_audio_url": {
+                      "type": "string",
+                      "format": "uri",
+                      "description": "URL to the preview audio of the voice"
+                    }
+                  },
+                  "required": [
+                    "voice_id",
+                    "voice_name",
+                    "provider",
+                    "gender"
+                  ]
+                },
+                "example": {
+                  "voice_id": "11labs-Adrian",
+                  "voice_name": "Adrian",
+                  "provider": "elevenlabs",
+                  "accent": "American",
+                  "gender": "male",
+                  "age": "Young",
+                  "preview_audio_url": "https://retell-utils-public.s3.us-west-2.amazonaws.com/adrian.mp3"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/list-calls": {
+      "post": {
+        "summary": "List Calls",
+        "description": "Retrieve call details based on specified criteria.",
+        "operationId": "listCalls",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ListCallsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CallDetails"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/create-web-call": {
+      "post": {
+        "summary": "Create Web Call",
+        "description": "Creates a new web call.",
+        "tags": [
+          "Web Calls"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWebCallRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebCallResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/get-retell-llm/{llm_id}": {
+      "get": {
+        "summary": "Get Retell LLM",
+        "description": "Retrieve details of a specific Retell LLM.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "llm_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unique id of the Retell LLM to be retrieved"
+          },
+          {
+            "in": "header",
+            "name": "Authorization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Authentication header containing API key. Format: \"Bearer YOUR_API_KEY\""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "llm_id": {
+                      "type": "string",
+                      "description": "Unique id of Retell LLM"
+                    },
+                    "llm_websocket_url": {
+                      "type": "string",
+                      "description": "LLM Websocket URL for agent API"
+                    },
+                    "model": {
+                      "type": "string",
+                      "enum": [
+                        "gpt-4o",
+                        "gpt-4o-mini",
+                        "claude-3.5-sonnet",
+                        "claude-3-haiku"
+                      ],
+                      "default": "gpt-4o",
+                      "description": "Select the underlying LLM"
+                    },
+                    "model_temperature": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1,
+                      "default": 0,
+                      "description": "Controls the randomness of the response"
+                    },
+                    "general_prompt": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "General prompt appended to system prompt regardless of state"
+                    },
+                    "general_tools": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Tool"
+                      },
+                      "nullable": true,
+                      "description": "List of tools the model may call"
+                    },
+                    "states": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/State"
+                      },
+                      "nullable": true,
+                      "description": "States of the LLM"
+                    },
+                    "starting_state": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "Name of the starting state"
+                    },
+                    "begin_message": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "First utterance said by the agent in the call"
+                    },
+                    "inbound_dynamic_variables_webhook_url": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "Webhook URL for retrieving dynamic variables for inbound calls"
+                    },
+                    "last_modification_timestamp": {
+                      "type": "integer",
+                      "description": "Last modification timestamp (milliseconds since epoch)"
+                    }
+                  },
+                  "required": [
+                    "llm_id",
+                    "llm_websocket_url",
+                    "last_modification_timestamp"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/delete-retell-llm/{llm_id}": {
+      "delete": {
+        "summary": "Delete Retell LLM",
+        "description": "Deletes an existing Retell LLM configuration.",
+        "operationId": "deleteRetellLLM",
+        "tags": [
+          "Retell LLM"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "llm_id",
+            "in": "path",
+            "required": true,
+            "description": "Unique identifier of the Retell LLM to be deleted",
+            "schema": {
+              "type": "string"
             }
           }
         ],
         "responses": {
           "204": {
-            "description": "Plant deleted",
-            "content": {}
+            "description": "Successful deletion, no content returned"
           },
-          "400": {
-            "description": "unexpected error",
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key"
+          },
+          "404": {
+            "description": "Not Found - LLM with the specified ID does not exist"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/list-retell-llms": {
+      "get": {
+        "summary": "List Retell LLMs",
+        "description": "Retrieves a list of all Retell LLM configurations.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RetellLLM"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/get-call/{call_id}": {
+      "get": {
+        "summary": "Get Call",
+        "description": "Retrieve details of a specific call.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "call_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The call id to retrieve call history for."
+          },
+          {
+            "in": "header",
+            "name": "Authorization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Authentication header containing API key. Format: \"Bearer YOUR_API_KEY\""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "call_type": {
+                      "type": "string",
+                      "example": "web_call"
+                    },
+                    "access_token": {
+                      "type": "string"
+                    },
+                    "call_id": {
+                      "type": "string"
+                    },
+                    "agent_id": {
+                      "type": "string"
+                    },
+                    "call_status": {
+                      "type": "string",
+                      "enum": [
+                        "registered",
+                        "ongoing",
+                        "ended",
+                        "error"
+                      ]
+                    },
+                    "metadata": {
+                      "type": "object"
+                    },
+                    "retell_llm_dynamic_variables": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "string"
+                      }
+                    },
+                    "opt_out_sensitive_data_storage": {
+                      "type": "boolean"
+                    },
+                    "start_timestamp": {
+                      "type": "integer"
+                    },
+                    "end_timestamp": {
+                      "type": "integer"
+                    },
+                    "transcript": {
+                      "type": "string"
+                    },
+                    "transcript_object": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/TranscriptItem"
+                      }
+                    },
+                    "transcript_with_tool_calls": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/TranscriptItem"
+                      }
+                    },
+                    "recording_url": {
+                      "type": "string"
+                    },
+                    "public_log_url": {
+                      "type": "string"
+                    },
+                    "e2e_latency": {
+                      "$ref": "#/components/schemas/LatencyObject"
+                    },
+                    "llm_latency": {
+                      "$ref": "#/components/schemas/LatencyObject"
+                    },
+                    "llm_websocket_network_rtt_latency": {
+                      "$ref": "#/components/schemas/LatencyObject"
+                    },
+                    "disconnection_reason": {
+                      "type": "string"
+                    },
+                    "call_analysis": {
+                      "$ref": "#/components/schemas/CallAnalysis"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/list-voices": {
+      "get": {
+        "summary": "List Voices",
+        "description": "List all voices available to the user",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "voice_id",
+                      "voice_name",
+                      "provider",
+                      "gender"
+                    ],
+                    "properties": {
+                      "voice_id": {
+                        "type": "string",
+                        "description": "The unique identifier for the voice"
+                      },
+                      "voice_name": {
+                        "type": "string",
+                        "description": "The name of the voice"
+                      },
+                      "provider": {
+                        "type": "string",
+                        "enum": [
+                          "elevenlabs",
+                          "openai",
+                          "deepgram"
+                        ],
+                        "description": "Indicates the provider of the voice"
+                      },
+                      "accent": {
+                        "type": "string",
+                        "description": "Accent annotation of the voice"
+                      },
+                      "gender": {
+                        "type": "string",
+                        "enum": [
+                          "male",
+                          "female"
+                        ],
+                        "description": "Gender of the voice"
+                      },
+                      "age": {
+                        "type": "string",
+                        "description": "Age annotation of the voice"
+                      },
+                      "preview_audio_url": {
+                        "type": "string",
+                        "format": "uri",
+                        "description": "URL to the preview audio of the voice"
+                      }
+                    }
+                  }
+                },
+                "example": [
+                  {
+                    "voice_id": "11labs-Adrian",
+                    "voice_name": "Adrian",
+                    "provider": "elevenlabs",
+                    "accent": "American",
+                    "gender": "male",
+                    "age": "Young",
+                    "preview_audio_url": "https://retell-utils-public.s3.us-west-2.amazonaws.com/adrian.mp3"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/create-phone-call": {
+      "post": {
+        "summary": "Create a new phone call",
+        "description": "Initiates a phone call from a specified number to a given number, optionally providing dynamic variables, metadata, and agent overrides for the call.",
+        "operationId": "createPhoneCall",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePhoneCallRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhoneCallResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/get-phone-number/{phone_number}": {
+      "get": {
+        "summary": "Get Phone Number",
+        "description": "Retrieve details of a specific phone number.",
+        "operationId": "getPhoneNumber",
+        "tags": [
+          "Phone Numbers"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "phone_number",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "E.164 format phone number (+country code, then number with no spaces or special characters)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "phone_number": {
+                      "type": "string",
+                      "description": "E.164 format of the number. Used as unique identifier"
+                    },
+                    "phone_number_pretty": {
+                      "type": "string",
+                      "description": "Formatted version of the phone number for display purposes"
+                    },
+                    "inbound_agent_id": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "Agent ID for handling inbound calls. If null, number won't accept inbound calls"
+                    },
+                    "outbound_agent_id": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "Agent ID for conducting outbound calls. If null, number can't initiate calls without agent ID override"
+                    },
+                    "area_code": {
+                      "type": "integer",
+                      "description": "3-digit US area code of the number"
+                    },
+                    "nickname": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "Reference name for the phone number"
+                    },
+                    "last_modification_timestamp": {
+                      "type": "integer",
+                      "description": "Timestamp of last modification (milliseconds since epoch)"
+                    }
+                  },
+                  "required": [
+                    "phone_number",
+                    "last_modification_timestamp"
+                  ]
+                },
+                "example": {
+                  "phone_number": "+14157774444",
+                  "phone_number_pretty": "+1 (415) 777-4444",
+                  "inbound_agent_id": "oBeDLoLOeuAbiuaMFXRtDOLriTJ5tSxD",
+                  "outbound_agent_id": "oBeDLoLOeuAbiuaMFXRtDOLriTJ5tSxD",
+                  "area_code": 415,
+                  "nickname": "Frontdesk Number",
+                  "last_modification_timestamp": 1703413636133
                 }
               }
             }
@@ -131,65 +976,1010 @@
     }
   },
   "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Authentication header containing API key. Format: \"Bearer YOUR_API_KEY\""
+      }
+    },
     "schemas": {
-      "Plant": {
+      "CreatePhoneNumberRequest": {
+        "type": "object",
         "required": [
-          "name"
+          "area_code",
+          "nickname"
         ],
+        "properties": {
+          "inbound_agent_id": {
+            "type": "string",
+            "nullable": true,
+            "description": "Agent ID for handling inbound calls. If null, number won't accept inbound calls."
+          },
+          "outbound_agent_id": {
+            "type": "string",
+            "nullable": true,
+            "description": "Agent ID for conducting outbound calls. If null, number can't initiate calls without agent ID override."
+          },
+          "area_code": {
+            "type": "integer",
+            "description": "3-digit US area code for the phone number."
+          },
+          "nickname": {
+            "type": "string",
+            "description": "Reference name for the phone number."
+          }
+        }
+      },
+      "PhoneNumberResponse": {
         "type": "object",
         "properties": {
-          "name": {
-            "description": "The name of the plant",
-            "type": "string"
+          "phone_number": {
+            "type": "string",
+            "description": "E.164 format number (+country code, then number with no spaces/special characters). Used as unique identifier."
           },
-          "tag": {
-            "description": "Tag to specify the type",
+          "phone_number_pretty": {
+            "type": "string",
+            "description": "Formatted version of the phone number for display purposes."
+          },
+          "inbound_agent_id": {
+            "type": "string",
+            "nullable": true,
+            "description": "Agent ID for handling inbound calls."
+          },
+          "outbound_agent_id": {
+            "type": "string",
+            "nullable": true,
+            "description": "Agent ID for conducting outbound calls."
+          },
+          "area_code": {
+            "type": "integer",
+            "description": "3-digit area code of the obtained number."
+          },
+          "nickname": {
+            "type": "string",
+            "description": "Reference name for the phone number."
+          },
+          "last_modification_timestamp": {
+            "type": "integer",
+            "description": "Timestamp of last modification (milliseconds since epoch)."
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error_message": {
             "type": "string"
           }
         }
       },
-      "NewPlant": {
+      "PhoneNumber": {
+        "type": "object",
+        "properties": {
+          "phone_number": {
+            "type": "string",
+            "description": "E.164 format of the number. Used as unique identifier",
+            "example": "+14157774444"
+          },
+          "phone_number_pretty": {
+            "type": "string",
+            "description": "Formatted version of the phone number for display purposes",
+            "example": "+1 (415) 777-4444"
+          },
+          "inbound_agent_id": {
+            "type": "string",
+            "nullable": true,
+            "description": "Agent ID for handling inbound calls. If null, number won't accept inbound calls",
+            "example": "oBeDLoLOeuAbiuaMFXRtDOLriTJ5tSxD"
+          },
+          "outbound_agent_id": {
+            "type": "string",
+            "nullable": true,
+            "description": "Agent ID for conducting outbound calls. If null, number can't initiate calls without agent ID override",
+            "example": "oBeDLoLOeuAbiuaMFXRtDOLriTJ5tSxD"
+          },
+          "area_code": {
+            "type": "integer",
+            "description": "3-digit US area code of the number",
+            "example": 415
+          },
+          "nickname": {
+            "type": "string",
+            "nullable": true,
+            "description": "Reference name for the phone number",
+            "example": "Frontdesk Number"
+          },
+          "last_modification_timestamp": {
+            "type": "integer",
+            "description": "Timestamp of last modification (milliseconds since epoch)",
+            "example": 1703413636133
+          }
+        },
+        "required": [
+          "phone_number",
+          "last_modification_timestamp"
+        ]
+      },
+      "UpdateRetellLLMRequest": {
+        "type": "object",
+        "properties": {
+          "model": {
+            "type": "string",
+            "enum": [
+              "gpt-4o",
+              "gpt-4o-mini",
+              "claude-3.5-sonnet",
+              "claude-3-haiku"
+            ],
+            "default": "gpt-4o"
+          },
+          "model_temperature": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "default": 0
+          },
+          "general_prompt": {
+            "type": "string",
+            "nullable": true
+          },
+          "general_tools": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Tool"
+            },
+            "nullable": true
+          },
+          "states": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/State"
+            },
+            "nullable": true
+          },
+          "starting_state": {
+            "type": "string",
+            "nullable": true
+          },
+          "begin_message": {
+            "type": "string",
+            "nullable": true
+          },
+          "inbound_dynamic_variables_webhook_url": {
+            "type": "string",
+            "nullable": true,
+            "format": "uri"
+          }
+        }
+      },
+      "Tool": {
+        "type": "object",
+        "required": [
+          "type",
+          "name"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "end_call"
+            ],
+            "description": "Tool type"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 64,
+            "pattern": "^[a-zA-Z0-9_-]+$",
+            "description": "Unique name for the tool"
+          },
+          "description": {
+            "type": "string",
+            "description": "Describes tool functionality and usage"
+          }
+        }
+      },
+      "State": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 64,
+            "pattern": "^[a-zA-Z0-9_-]+$",
+            "description": "Unique state name"
+          },
+          "state_prompt": {
+            "type": "string",
+            "description": "State-specific prompt appended to general prompt"
+          },
+          "edges": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Edge"
+            },
+            "description": "Defines transitions to other states"
+          },
+          "tools": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Tool"
+            },
+            "description": "State-specific tools available to the model"
+          }
+        }
+      },
+      "Edge": {
+        "type": "object",
+        "required": [
+          "destination_state_name",
+          "description"
+        ],
+        "properties": {
+          "destination_state_name": {
+            "type": "string",
+            "description": "Name of the destination state"
+          },
+          "description": {
+            "type": "string",
+            "description": "Describes when/why the transition occurs"
+          },
+          "parameters": {
+            "$ref": "#/components/schemas/Parameters"
+          }
+        }
+      },
+      "RetellLLMResponse": {
         "allOf": [
           {
-            "$ref": "#/components/schemas/Plant"
+            "$ref": "#/components/schemas/UpdateRetellLLMRequest"
           },
           {
-            "required": [
-              "id"
-            ],
             "type": "object",
+            "required": [
+              "llm_id",
+              "llm_websocket_url",
+              "last_modification_timestamp"
+            ],
             "properties": {
-              "id": {
-                "description": "Identification number of the plant",
-                "type": "integer",
-                "format": "int64"
+              "llm_id": {
+                "type": "string"
+              },
+              "llm_websocket_url": {
+                "type": "string",
+                "format": "uri"
+              },
+              "last_modification_timestamp": {
+                "type": "integer"
               }
             }
           }
         ]
       },
-      "Error": {
-        "required": [
-          "error",
-          "message"
-        ],
+      "CreateRetellLLMRequest": {
         "type": "object",
         "properties": {
-          "error": {
-            "type": "integer",
-            "format": "int32"
+          "model": {
+            "type": "string",
+            "enum": [
+              "gpt-4o",
+              "gpt-4o-mini",
+              "claude-3.5-sonnet",
+              "claude-3-haiku"
+            ],
+            "default": "gpt-4o"
           },
-          "message": {
+          "model_temperature": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "default": 0
+          },
+          "general_prompt": {
+            "type": "string",
+            "nullable": true
+          },
+          "general_tools": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Tool"
+            },
+            "nullable": true
+          },
+          "states": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/State"
+            },
+            "nullable": true
+          },
+          "starting_state": {
+            "type": "string",
+            "nullable": true
+          },
+          "begin_message": {
+            "type": "string",
+            "nullable": true
+          },
+          "inbound_dynamic_variables_webhook_url": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "RetellLLM": {
+        "type": "object",
+        "required": [
+          "llm_id",
+          "llm_websocket_url",
+          "last_modification_timestamp"
+        ],
+        "properties": {
+          "llm_id": {
+            "type": "string",
+            "description": "Unique identifier of the Retell LLM"
+          },
+          "llm_websocket_url": {
+            "type": "string",
+            "description": "WebSocket URL constructed from the unique LLM ID"
+          },
+          "model": {
+            "type": "string",
+            "enum": [
+              "gpt-4o",
+              "gpt-4o-mini",
+              "claude-3.5-sonnet",
+              "claude-3-haiku"
+            ],
+            "default": "gpt-4o",
+            "description": "Underlying LLM model"
+          },
+          "model_temperature": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "default": 0,
+            "description": "Controls response randomness"
+          },
+          "general_prompt": {
+            "type": "string",
+            "nullable": true,
+            "description": "General prompt appended to system prompt regardless of state"
+          },
+          "general_tools": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Tool"
+            },
+            "nullable": true,
+            "description": "List of tools available to the model in all states"
+          },
+          "states": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/State"
+            },
+            "nullable": true,
+            "description": "Defines different states for the LLM conversation flow"
+          },
+          "starting_state": {
+            "type": "string",
+            "nullable": true,
+            "description": "Name of the starting state"
+          },
+          "begin_message": {
+            "type": "string",
+            "nullable": true,
+            "description": "First utterance by the agent"
+          },
+          "inbound_dynamic_variables_webhook_url": {
+            "type": "string",
+            "nullable": true,
+            "description": "Webhook URL for retrieving dynamic variables for inbound calls"
+          },
+          "last_modification_timestamp": {
+            "type": "integer",
+            "description": "Timestamp of last modification (milliseconds since epoch)"
+          }
+        }
+      },
+      "ListCallsRequest": {
+        "type": "object",
+        "properties": {
+          "filter_criteria": {
+            "type": "object",
+            "properties": {
+              "agent_id": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "before_start_timestamp": {
+                "type": "integer"
+              },
+              "after_start_timestamp": {
+                "type": "integer"
+              },
+              "before_end_timestamp": {
+                "type": "integer"
+              },
+              "after_end_timestamp": {
+                "type": "integer"
+              }
+            }
+          },
+          "sort_order": {
+            "type": "string",
+            "enum": [
+              "ascending",
+              "descending"
+            ],
+            "default": "descending"
+          },
+          "limit": {
+            "type": "integer",
+            "default": 100
+          },
+          "pagination_key": {
             "type": "string"
           }
         }
-      }
-    },
-    "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer"
+      },
+      "CallDetails": {
+        "type": "object",
+        "required": [
+          "call_type",
+          "access_token",
+          "call_id",
+          "agent_id",
+          "call_status"
+        ],
+        "properties": {
+          "call_type": {
+            "type": "string",
+            "enum": [
+              "web_call"
+            ]
+          },
+          "access_token": {
+            "type": "string"
+          },
+          "call_id": {
+            "type": "string"
+          },
+          "agent_id": {
+            "type": "string"
+          },
+          "call_status": {
+            "type": "string",
+            "enum": [
+              "registered",
+              "ongoing",
+              "ended",
+              "error"
+            ]
+          },
+          "metadata": {
+            "type": "object"
+          },
+          "retell_llm_dynamic_variables": {
+            "type": "object"
+          },
+          "opt_out_sensitive_data_storage": {
+            "type": "boolean"
+          },
+          "start_timestamp": {
+            "type": "integer"
+          },
+          "end_timestamp": {
+            "type": "integer"
+          },
+          "transcript": {
+            "type": "string"
+          },
+          "transcript_object": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TranscriptObject"
+            }
+          },
+          "transcript_with_tool_calls": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TranscriptObject"
+            }
+          },
+          "recording_url": {
+            "type": "string"
+          },
+          "public_log_url": {
+            "type": "string"
+          },
+          "e2e_latency": {
+            "$ref": "#/components/schemas/LatencyMetrics"
+          },
+          "llm_latency": {
+            "$ref": "#/components/schemas/LatencyMetrics"
+          },
+          "llm_websocket_network_rtt_latency": {
+            "$ref": "#/components/schemas/LatencyMetrics"
+          },
+          "disconnection_reason": {
+            "type": "string",
+            "enum": [
+              "user_hangup",
+              "agent_hangup",
+              "call_transfer",
+              "voicemail_reached",
+              "inactivity",
+              "machine_detected",
+              "max_duration_reached",
+              "concurrency_limit_reached",
+              "no_valid_payment",
+              "scam_detected",
+              "error_inbound_webhook",
+              "dial_busy",
+              "dial_failed",
+              "dial_no_answer",
+              "error_llm_websocket_open",
+              "error_llm_websocket_lost_connection",
+              "error_llm_websocket_runtime",
+              "error_llm_websocket_corrupt_payload",
+              "error_frontend_corrupted_payload",
+              "error_twilio",
+              "error_no_audio_received",
+              "error_asr",
+              "error_retell",
+              "error_unknown",
+              "error_user_not_joined",
+              "registered_call_timeout"
+            ]
+          },
+          "call_analysis": {
+            "$ref": "#/components/schemas/CallAnalysis"
+          }
+        }
+      },
+      "TranscriptObject": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "agent",
+              "user"
+            ]
+          },
+          "content": {
+            "type": "string"
+          },
+          "words": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "word": {
+                  "type": "string"
+                },
+                "start": {
+                  "type": "number"
+                },
+                "end": {
+                  "type": "number"
+                }
+              }
+            }
+          }
+        }
+      },
+      "LatencyMetrics": {
+        "type": "object",
+        "properties": {
+          "p50": {
+            "type": "number"
+          },
+          "p90": {
+            "type": "number"
+          },
+          "p95": {
+            "type": "number"
+          },
+          "p99": {
+            "type": "number"
+          },
+          "max": {
+            "type": "number"
+          },
+          "min": {
+            "type": "number"
+          },
+          "num": {
+            "type": "number"
+          }
+        }
+      },
+      "CallAnalysis": {
+        "type": "object",
+        "properties": {
+          "call_summary": {
+            "type": "string"
+          },
+          "in_voicemail": {
+            "type": "boolean"
+          },
+          "user_sentiment": {
+            "type": "string",
+            "enum": [
+              "Negative",
+              "Positive",
+              "Neutral",
+              "Unknown"
+            ]
+          },
+          "call_successful": {
+            "type": "boolean"
+          },
+          "custom_analysis_data": {
+            "type": "object"
+          }
+        }
+      },
+      "CreateWebCallRequest": {
+        "type": "object",
+        "required": [
+          "agent_id"
+        ],
+        "properties": {
+          "agent_id": {
+            "type": "string",
+            "description": "Unique ID of the agent used for the call."
+          },
+          "metadata": {
+            "type": "object",
+            "description": "An arbitrary object for storage purposes only."
+          },
+          "retell_llm_dynamic_variables": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Optional dynamic variables for Retell LLM prompt and tool description."
+          }
+        }
+      },
+      "WebCallResponse": {
+        "type": "object",
+        "properties": {
+          "call_type": {
+            "type": "string",
+            "enum": [
+              "web_call"
+            ]
+          },
+          "access_token": {
+            "type": "string"
+          },
+          "call_id": {
+            "type": "string"
+          },
+          "agent_id": {
+            "type": "string"
+          },
+          "call_status": {
+            "type": "string"
+          },
+          "metadata": {
+            "type": "object"
+          },
+          "retell_llm_dynamic_variables": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "opt_out_sensitive_data_storage": {
+            "type": "boolean"
+          },
+          "start_timestamp": {
+            "type": "integer"
+          },
+          "end_timestamp": {
+            "type": "integer"
+          },
+          "transcript": {
+            "type": "string"
+          },
+          "transcript_object": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TranscriptItem"
+            }
+          },
+          "transcript_with_tool_calls": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TranscriptItem"
+            }
+          },
+          "recording_url": {
+            "type": "string"
+          },
+          "public_log_url": {
+            "type": "string"
+          },
+          "e2e_latency": {
+            "$ref": "#/components/schemas/LatencyObject"
+          },
+          "llm_latency": {
+            "$ref": "#/components/schemas/LatencyObject"
+          },
+          "llm_websocket_network_rtt_latency": {
+            "$ref": "#/components/schemas/LatencyObject"
+          },
+          "disconnection_reason": {
+            "type": "string"
+          },
+          "call_analysis": {
+            "$ref": "#/components/schemas/CallAnalysis"
+          }
+        }
+      },
+      "TranscriptItem": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "agent",
+              "user"
+            ]
+          },
+          "content": {
+            "type": "string"
+          },
+          "words": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "word": {
+                  "type": "string"
+                },
+                "start": {
+                  "type": "number"
+                },
+                "end": {
+                  "type": "number"
+                }
+              }
+            }
+          }
+        }
+      },
+      "WordObject": {
+        "type": "object",
+        "properties": {
+          "word": {
+            "type": "string"
+          },
+          "start": {
+            "type": "number"
+          },
+          "end": {
+            "type": "number"
+          }
+        }
+      },
+      "LatencyObject": {
+        "type": "object",
+        "properties": {
+          "p50": {
+            "type": "number"
+          },
+          "p90": {
+            "type": "number"
+          },
+          "p95": {
+            "type": "number"
+          },
+          "p99": {
+            "type": "number"
+          },
+          "max": {
+            "type": "number"
+          },
+          "min": {
+            "type": "number"
+          },
+          "num": {
+            "type": "number"
+          }
+        }
+      },
+      "Parameters": {
+        "type": "object",
+        "required": [
+          "type",
+          "properties"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "object"
+            ]
+          },
+          "properties": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object"
+            }
+          },
+          "required": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "CreatePhoneCallRequest": {
+        "type": "object",
+        "required": [
+          "from_number",
+          "to_number"
+        ],
+        "properties": {
+          "from_number": {
+            "type": "string",
+            "description": "The number owned by the user in E.164 format. Must be a Retell-managed number."
+          },
+          "to_number": {
+            "type": "string",
+            "description": "The recipient's number in E.164 format. Currently, only US numbers are supported."
+          },
+          "override_agent_id": {
+            "type": "string",
+            "description": "An optional agent ID to override the default agent for this particular call."
+          },
+          "metadata": {
+            "type": "object",
+            "description": "An arbitrary object used for storage purposes only. It does not impact the processing of the call."
+          },
+          "retell_llm_dynamic_variables": {
+            "type": "object",
+            "description": "Optional key-value pairs of dynamic variables injected into the Retell LLM prompt and tool description."
+          }
+        }
+      },
+      "PhoneCallResponse": {
+        "type": "object",
+        "properties": {
+          "call_type": {
+            "type": "string",
+            "enum": [
+              "phone_call"
+            ]
+          },
+          "from_number": {
+            "type": "string"
+          },
+          "to_number": {
+            "type": "string"
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "inbound",
+              "outbound"
+            ]
+          },
+          "call_id": {
+            "type": "string"
+          },
+          "agent_id": {
+            "type": "string"
+          },
+          "call_status": {
+            "type": "string",
+            "enum": [
+              "registered",
+              "ongoing",
+              "ended",
+              "error"
+            ]
+          },
+          "metadata": {
+            "type": "object"
+          },
+          "retell_llm_dynamic_variables": {
+            "type": "object"
+          },
+          "opt_out_sensitive_data_storage": {
+            "type": "boolean"
+          },
+          "start_timestamp": {
+            "type": "integer"
+          },
+          "end_timestamp": {
+            "type": "integer"
+          },
+          "transcript": {
+            "type": "string"
+          },
+          "transcript_object": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TranscriptObject"
+            }
+          },
+          "transcript_with_tool_calls": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TranscriptObject"
+            }
+          },
+          "recording_url": {
+            "type": "string"
+          },
+          "public_log_url": {
+            "type": "string"
+          },
+          "e2e_latency": {
+            "$ref": "#/components/schemas/LatencyObject"
+          },
+          "llm_latency": {
+            "$ref": "#/components/schemas/LatencyObject"
+          },
+          "llm_websocket_network_rtt_latency": {
+            "$ref": "#/components/schemas/LatencyObject"
+          },
+          "disconnection_reason": {
+            "type": "string",
+            "enum": [
+              "user_hangup",
+              "agent_hangup",
+              "call_transfer",
+              "voicemail_reached",
+              "inactivity",
+              "machine_detected",
+              "max_duration_reached",
+              "concurrency_limit_reached",
+              "no_valid_payment",
+              "scam_detected",
+              "error_inbound_webhook",
+              "dial_busy",
+              "dial_failed",
+              "dial_no_answer",
+              "error_llm_websocket_open",
+              "error_llm_websocket_lost_connection",
+              "error_llm_websocket_runtime",
+              "error_llm_websocket_corrupt_payload",
+              "error_frontend_corrupted_payload",
+              "error_twilio",
+              "error_no_audio_received",
+              "error_asr",
+              "error_retell",
+              "error_unknown",
+              "error_user_not_joined",
+              "registered_call_timeout"
+            ]
+          },
+          "call_analysis": {
+            "$ref": "#/components/schemas/CallAnalysis"
+          }
+        }
       }
     }
-  }
+  },
+  "tags": [
+    {
+      "name": "Phone Numbers",
+      "description": "Operations related to phone numbers"
+    }
+  ]
 }
