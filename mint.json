@@ -28,7 +28,9 @@
   "tabs": [
     {
       "name": "API Reference",
-      "url": "api-reference"
+      "url": "api-reference",
+      "openapi": "api-reference/openapi.json",
+      "icon": "square-terminal"
     }
   ],
   "anchors": [
